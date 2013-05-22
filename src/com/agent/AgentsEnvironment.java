@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
+import com.agent.evolution.NeuralNetworkDrivenAgent;
+
 public class AgentsEnvironment {
 
 	private int width;
@@ -88,5 +90,12 @@ public class AgentsEnvironment {
 			}
 		}
 		return filtered;
+	}
+	
+	public synchronized void clearAgents() {
+		for (int i = agents.size() - 1; i >= 0; i--) {
+			if (agents.get(i).getClass().equals(NeuralNetworkDrivenAgent.class))
+				agents.remove(i);
+		}
 	}
 }

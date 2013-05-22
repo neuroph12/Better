@@ -64,20 +64,13 @@ public class NeuralNetworkDrivenAgent extends Agent {
 		deltaSpeed = this.avoidNaNAndInfinity(deltaSpeed);
 		deltaAngle = this.avoidNaNAndInfinity(deltaAngle);
 
-		double newSpeed = this.normalizeSpeed(this.getSpeed() + deltaSpeed);
-		double newAngle = this.getAngle() + this.normalizeDeltaAngle(deltaAngle);
+		double newSpeed = normalizeSpeed(this.getSpeed() + deltaSpeed, maxSpeed);
+		double newAngle = this.getAngle() + normalizeDeltaAngle(deltaAngle, maxDeltaAngle);
 
 		this.setAngle(newAngle);
 		this.setSpeed(newSpeed);
 
 		this.move();
-	}
-
-	private double avoidNaNAndInfinity(double x) {
-		if ((Double.isNaN(x)) || Double.isInfinite(x)) {
-			x = 0;
-		}
-		return x;
 	}
 
 	private void activateNeuralNetwork(List<Double> nnInputs) {
@@ -165,55 +158,7 @@ public class NeuralNetworkDrivenAgent extends Agent {
 		}
 		return nnInputs;
 	}
-
-	protected boolean inSight(AbstractAgent agent) {
-		double crossProduct = this.cosTeta(this.getRx(), this.getRy(), agent.getX() - this.getX(), agent.getY() - this.getY());
-		return (crossProduct > 0);
-	}
-
-	protected double distanceTo(AbstractAgent agent) {
-		return this.module(agent.getX() - this.getX(), agent.getY() - this.getY());
-	}
-
-	protected double cosTeta(double vx1, double vy1, double vx2, double vy2) {
-		double v1 = this.module(vx1, vy1);
-		double v2 = this.module(vx2, vy2);
-		if (v1 == 0) {
-			v1 = 1E-5;
-		}
-		if (v2 == 0) {
-			v2 = 1E-5;
-		}
-		double ret = ((vx1 * vx2) + (vy1 * vy2)) / (v1 * v2);
-		return ret;
-	}
-
-	protected double module(double vx1, double vy1) {
-		return Math.sqrt((vx1 * vx1) + (vy1 * vy1));
-	}
-
-	protected double pseudoScalarProduct(double vx1, double vy1, double vx2, double vy2) {
-		return (vx1 * vy2) - (vy1 * vx2);
-	}
-
-	private double normalizeSpeed(double speed) {
-		double abs = Math.abs(speed);
-		if (abs > maxSpeed) {
-			double sign = Math.signum(speed);
-			speed = sign * (abs - (Math.floor(abs / maxSpeed) * maxSpeed));
-		}
-		return speed;
-	}
-
-	private double normalizeDeltaAngle(double angle) {
-		double abs = Math.abs(angle);
-		if (abs > maxDeltaAngle) {
-			double sign = Math.signum(angle);
-			angle = sign * (abs - (Math.floor(abs / maxDeltaAngle) * maxDeltaAngle));
-		}
-		return angle;
-	}
-
+	
 	public static OptimizableNeuralNetwork randomNeuralNetworkBrain() {
 		OptimizableNeuralNetwork nn = new OptimizableNeuralNetwork(15);
 		for (int i = 0; i < 15; i++) {
