@@ -77,7 +77,7 @@ public class OptNN extends NeuralNetwork implements Chromosome<OptNN>,
 	}
 
 	@Override
-	public NeuralNetwork clone() {
+	public OptNN clone() {
 		OptNN clone = new OptNN();
 		clone.setInputNeurons(this.getInputNeurons().clone());
 		clone.setOutputNeurons(this.getOutputNeurons().clone());

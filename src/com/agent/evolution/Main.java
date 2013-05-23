@@ -36,18 +36,12 @@ import com.agent.AgentsEnvironment;
 import com.agent.Food;
 import com.agent.MovingFood;
 import com.agent.production.NNAgent;
-import com.agent.production.OptNN;
-import com.agent.production.ProductionAgent;
 import com.lagodiuk.ga.Fitness;
 import com.lagodiuk.ga.GeneticAlgorithm;
 import com.lagodiuk.ga.IterartionListener;
 import com.lagodiuk.ga.Population;
 
-import org.neuroph.core.Layer;
-//import com.nn.NeuralNetwork;
-import org.neuroph.core.NeuralNetwork;
-import org.neuroph.core.Neuron;
-
+import com.nn.NeuralNetwork;
 import com.nn.genetic.OptimizableNeuralNetwork;
 
 public class Main {
@@ -65,7 +59,7 @@ public class Main {
 
 	private static Random random = new Random();
 
-	private static GeneticAlgorithm<OptNN, Double> ga;
+	private static GeneticAlgorithm<OptimizableNeuralNetwork, Double> ga;
 
 	private static AgentsEnvironment environment;
 
@@ -86,10 +80,14 @@ public class Main {
 	private static JPanel controlsPanel;
 
 	private static JTextField evolveTextField;
+	
+	private static JTextField neuralTextField;
 
 	private static JButton evolveButton;
 
 	private static JButton playPauseButton;
+	
+	private static JButton printButton;
 
 	private static JButton loadBrainButton;
 
@@ -118,6 +116,15 @@ public class Main {
 	private static Preferences prefs;
 
 	public static void main(String[] args) throws Exception {
+		// TODO maybe, add ability to define these parameters as environment
+		// constants
+		int gaPopulationSize = 5;
+		int parentalChromosomesSurviveCount = 1;
+		int environmentWidth = 600;
+		int environmentHeight = 400;
+		int agentsCount = 15;
+		int foodCount = 10;
+
 		initializeGeneticAlgorithm(gaPopulationSize, parentalChromosomesSurviveCount, null);
 
 		initializeEnvironment(environmentWidth, environmentHeight, agentsCount, foodCount);
@@ -211,7 +218,7 @@ public class Main {
 	}
 
 	private static void initializeUI(int environmentWidth, int environmentHeight) {
-		appFrame = new JFrame("Neural network driven agents");
+		appFrame = new JFrame("Evolving neural network driven agents");
 		appFrame.setSize(environmentWidth + 130, environmentHeight + 50);
 		appFrame.setResizable(false);
 		appFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -238,9 +245,8 @@ public class Main {
 		loadBrainButton = new JButton("load brain");
 		controlsPanel.add(loadBrainButton);
 
-		// TODO: 
-		staticFoodRadioButton = new JRadioButton("neural");
-		dynamicFoodRadioButton = new JRadioButton("production");
+		staticFoodRadioButton = new JRadioButton("static food");
+		dynamicFoodRadioButton = new JRadioButton("dynamic food");
 		foodTypeButtonGroup = new ButtonGroup();
 		foodTypeButtonGroup.add(staticFoodRadioButton);
 		foodTypeButtonGroup.add(dynamicFoodRadioButton);
@@ -256,6 +262,12 @@ public class Main {
 		regenerateFoodCheckbox.setSelected(regenerateFood);
 		controlsPanel.add(regenerateFoodCheckbox);
 
+		printButton = new JButton("print");
+		controlsPanel.add(printButton);
+		
+		neuralTextField = new JTextField("15:1");
+		controlsPanel.add(neuralTextField);
+		
 		playPauseButton = new JButton("pause");
 		controlsPanel.add(playPauseButton);
 
@@ -295,7 +307,7 @@ public class Main {
 //						NeuralNetworkDrivenAgent agent = new NeuralNetworkDrivenAgent(x, y, direction);
 //						ProductionAgent agent = new ProductionAgent(x, y, direction); 
 						NNAgent agent = new NNAgent(x, y, direction);
-						agent.setBrain(ga.getBest());
+//						agent.setBrain(ga.getBest());
 
 						environment.addAgent(agent);
 					}
@@ -332,72 +344,70 @@ public class Main {
 	}
 
 	private static void initializeLoadBrainButtonFunctionality() {
-		// FIX:
-//		loadBrainButton.addActionListener(new ActionListener() {
-//			@Override
-//			public void actionPerformed(ActionEvent arg0) {
-//				disableControls();
-//
-//				int returnVal = fileChooser.showOpenDialog(appFrame);
-//				if (returnVal == JFileChooser.APPROVE_OPTION) {
-//					try {
-//						File brainFile = fileChooser.getSelectedFile();
-//						prefs.put(PREFS_KEY_BRAINS_DIRECTORY, brainFile.getParent());
-//
-//						FileInputStream in = new FileInputStream(brainFile);
-//
-//						NeuralNetwork newBrain = NeuralNetwork.unmarsall(in);
-//						in.close();
-//
-//						setAgentBrains(newBrain);
-//
-//						OptimizableNeuralNetwork optimizableNewBrain = new OptimizableNeuralNetwork(newBrain);
-//						int populationSize = ga.getPopulation().getSize();
-//						int parentalChromosomesSurviveCount = ga.getParentChromosomesSurviveCount();
-//						initializeGeneticAlgorithm(populationSize, parentalChromosomesSurviveCount, optimizableNewBrain);
-//
-//						// reset population number counter
-//						populationNumber = 0;
-//						populationInfoLabel.setText("Population: " + populationNumber);
-//					} catch (Exception e) {
-//						e.printStackTrace();
-//					}
-//				}
-//
-//				enableControls();
-//			}
-//		});
+		loadBrainButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				disableControls();
+
+				int returnVal = fileChooser.showOpenDialog(appFrame);
+				if (returnVal == JFileChooser.APPROVE_OPTION) {
+					try {
+						File brainFile = fileChooser.getSelectedFile();
+						prefs.put(PREFS_KEY_BRAINS_DIRECTORY, brainFile.getParent());
+
+						FileInputStream in = new FileInputStream(brainFile);
+
+						NeuralNetwork newBrain = NeuralNetwork.unmarsall(in);
+						in.close();
+
+						setAgentBrains(newBrain);
+
+						OptimizableNeuralNetwork optimizableNewBrain = new OptimizableNeuralNetwork(newBrain);
+						int populationSize = ga.getPopulation().getSize();
+						int parentalChromosomesSurviveCount = ga.getParentChromosomesSurviveCount();
+						initializeGeneticAlgorithm(populationSize, parentalChromosomesSurviveCount, optimizableNewBrain);
+
+						// reset population number counter
+						populationNumber = 0;
+						populationInfoLabel.setText("Population: " + populationNumber);
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				}
+
+				enableControls();
+			}
+		});
 	}
 
 	private static void initializeSaveBrainButtonFunctionality() {
-		// FIX
-//		saveBrainButton.addActionListener(new ActionListener() {
-//			@Override
-//			public void actionPerformed(ActionEvent arg0) {
-//				disableControls();
-//
-//				int returnVal = fileChooser.showSaveDialog(appFrame);
-//				if (returnVal == JFileChooser.APPROVE_OPTION) {
-//					try {
-//						File brainFile = fileChooser.getSelectedFile();
-//						prefs.put(PREFS_KEY_BRAINS_DIRECTORY, brainFile.getParent());
-//
-//						FileOutputStream out = new FileOutputStream(brainFile);
-//
-//						// current brain is the best evolved neural network
-//						// from genetic algorithm
-//						NeuralNetwork brain = ga.getBest();
-//						NeuralNetwork.marsall(brain, out);
-//
-//						out.close();
-//					} catch (Exception e) {
-//						e.printStackTrace();
-//					}
-//				}
-//
-//				enableControls();
-//			}
-//		});
+		saveBrainButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				disableControls();
+
+				int returnVal = fileChooser.showSaveDialog(appFrame);
+				if (returnVal == JFileChooser.APPROVE_OPTION) {
+					try {
+						File brainFile = fileChooser.getSelectedFile();
+						prefs.put(PREFS_KEY_BRAINS_DIRECTORY, brainFile.getParent());
+
+						FileOutputStream out = new FileOutputStream(brainFile);
+
+						// current brain is the best evolved neural network
+						// from genetic algorithm
+						NeuralNetwork brain = ga.getBest();
+						NeuralNetwork.marsall(brain, out);
+						
+						out.close();
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				}
+
+				enableControls();
+			}
+		});
 	}
 
 	private static void initializeResetButtonFunctionality() {
@@ -408,8 +418,10 @@ public class Main {
 
 				int populationSize = ga.getPopulation().getSize();
 				int parentalChromosomesSurviveCount = ga.getParentChromosomesSurviveCount();
-				initializeGeneticAlgorithm(populationSize, parentalChromosomesSurviveCount, null);
-
+				int neuronsCount = Integer.parseInt(neuralTextField.getText().split(":")[0]);
+				int linksCount = Integer.parseInt(neuralTextField.getText().split(":")[1]);
+				initializeGeneticAlgorithm(populationSize, parentalChromosomesSurviveCount, 
+						NeuralNetworkDrivenAgent.genNeuralBrain(neuronsCount, linksCount));
 				NeuralNetwork newBrain = ga.getBest();
 
 				setAgentBrains(newBrain);
@@ -460,10 +472,9 @@ public class Main {
 									}
 								};
 
-								// FIX
-//						ga.addIterationListener(progressListener);
+						ga.addIterationListener(progressListener);
 						ga.evolve(iterCount);
-//						ga.removeIterationListener(progressListener);
+						ga.removeIterationListener(progressListener);
 						populationNumber += iterCount;
 
 						NeuralNetwork newBrain = ga.getBest();
@@ -503,30 +514,38 @@ public class Main {
 	}
 
 	private static void initializeAddingFoodFunctionality() {
-//		environmentPanel.addMouseListener(new MouseAdapter() {
-//			@Override
-//			public void mouseClicked(MouseEvent click) {
-//				double x = click.getX();
-//				double y = click.getY();
-//
-//				if (SwingUtilities.isLeftMouseButton(click)) {
-//					Food food = createRandomFood(1, 1);
-//					food.setX(x);
-//					food.setY(y);
-//					environment.addAgent(food);
-//				} else {
-//					double angle = 2 * Math.PI * random.nextDouble();
-//					NeuralNetworkDrivenAgent agent = new NeuralNetworkDrivenAgent(x, y, angle);
-//					// FIX
-//					OptNN brain = ga.getBest();
-//					agent.setBrain(brain);
-//					environment.addAgent(agent);
-//				}
-//			}
-//		});
+		environmentPanel.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent click) {
+				double x = click.getX();
+				double y = click.getY();
+
+				if (SwingUtilities.isLeftMouseButton(click)) {
+					Food food = createRandomFood(1, 1);
+					food.setX(x);
+					food.setY(y);
+					environment.addAgent(food);
+				} else {
+					double angle = 2 * Math.PI * random.nextDouble();
+					NeuralNetworkDrivenAgent agent = new NeuralNetworkDrivenAgent(x, y, angle);
+					OptimizableNeuralNetwork brain = ga.getBest();
+					agent.setBrain(brain);
+					environment.addAgent(agent);
+				}
+			}
+		});
 	}
 
 	private static void initializePlayPauseButtonFunctionality() {
+		printButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent event) {
+				for (NeuralNetworkDrivenAgent agent : environment.filter(NeuralNetworkDrivenAgent.class)) {
+					agent.getBrain().print();
+				}
+			}
+		});
+		
 		playPauseButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent event) {
@@ -549,8 +568,7 @@ public class Main {
 			int y = random.nextInt(environmentHeight);
 			double direction = random.nextDouble() * 2 * Math.PI;
 
-			// FIX
-			NNAgent agent = new NNAgent(x, y, direction);
+			NeuralNetworkDrivenAgent agent = new NeuralNetworkDrivenAgent(x, y, direction);
 			agent.setBrain(brain);
 
 			environment.addAgent(agent);
@@ -609,32 +627,8 @@ public class Main {
 	}
 
 	private static void setAgentBrains(NeuralNetwork newBrain) {
-		for (NNAgent agent : environment.filter(NNAgent.class)) {
-			// FIX
-			agent.setBrain(Clone(newBrain));
+		for (NeuralNetworkDrivenAgent agent : environment.filter(NeuralNetworkDrivenAgent.class)) {
+			agent.setBrain(newBrain.clone());
 		}
-	}
-	
-	private static OptNN Clone(NeuralNetwork net)
-	{
-		OptNN clone = new OptNN();
-		clone.setInputNeurons(net.getInputNeurons().clone());
-		clone.setOutputNeurons(net.getOutputNeurons().clone());
-		clone.setLearningRule(net.getLearningRule());
-		for (Layer layer : net.getLayers()) {
-			Layer newLayer = new Layer();
-			for (Neuron neuron : layer.getNeurons()) {
-				Neuron newNewron = new Neuron();
-				newNewron.setError(neuron.getError());
-				newNewron.setInput(neuron.getNetInput());
-				newNewron.setOutput(neuron.getOutput());
-				newNewron.setInputFunction(neuron.getInputFunction());
-				newNewron.setTransferFunction(neuron.getTransferFunction());
-				newLayer.addNeuron(newNewron);
-			}
-			clone.addLayer(newLayer);
-		}
-		
-		return clone;
 	}
 }

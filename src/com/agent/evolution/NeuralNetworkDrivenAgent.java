@@ -24,6 +24,8 @@ public class NeuralNetworkDrivenAgent extends Agent {
 	private static final double EMPTY = 0;
 
 	private static final double FOOD = 10;
+	
+	private static final int RAND_NEURONS = 20;
 
 	private volatile NeuralNetwork brain;
 
@@ -31,6 +33,10 @@ public class NeuralNetworkDrivenAgent extends Agent {
 		super(x, y, angle);
 	}
 
+	public NeuralNetwork getBrain() {
+		return brain;
+	}
+	
 	/**
 	 * Animating of agents and evolving best brain - might be in different
 	 * threads <br/>
@@ -159,9 +165,9 @@ public class NeuralNetworkDrivenAgent extends Agent {
 		return nnInputs;
 	}
 	
-	public static OptimizableNeuralNetwork randomNeuralNetworkBrain() {
-		OptimizableNeuralNetwork nn = new OptimizableNeuralNetwork(15);
-		for (int i = 0; i < 15; i++) {
+	public static OptimizableNeuralNetwork randomNeuralNetworkBrain () {
+		OptimizableNeuralNetwork nn = new OptimizableNeuralNetwork(RAND_NEURONS);
+		for (int i = 0; i < RAND_NEURONS; i++) {
 			ThresholdFunction f = ThresholdFunction.getRandomFunction();
 			nn.setNeuronFunction(i, f, f.getDefaultParams());
 		}
@@ -169,12 +175,36 @@ public class NeuralNetworkDrivenAgent extends Agent {
 			nn.setNeuronFunction(i, ThresholdFunction.LINEAR, ThresholdFunction.LINEAR.getDefaultParams());
 		}
 		for (int i = 0; i < 6; i++) {
-			for (int j = 6; j < 15; j++) {
+			for (int j = 6; j < RAND_NEURONS; j++) {
 				nn.addLink(i, j, Math.random());
 			}
 		}
-		for (int i = 6; i < 15; i++) {
-			for (int j = 6; j < 15; j++) {
+		for (int i = 6; i < RAND_NEURONS; i++) {
+			for (int j = 6; j < RAND_NEURONS; j++) {
+				if (i < j) {
+					nn.addLink(i, j, Math.random());
+				}
+			}
+		}
+		return nn;
+	}
+	
+	public static OptimizableNeuralNetwork genNeuralBrain (int neuronsCount, int linksCount) {
+		OptimizableNeuralNetwork nn = new OptimizableNeuralNetwork(neuronsCount);
+		for (int i = 0; i < neuronsCount; i++) {
+			ThresholdFunction f = ThresholdFunction.getRandomFunction();
+			nn.setNeuronFunction(i, f, f.getDefaultParams());
+		}
+		for (int i = 0; i < 6; i++) {
+			nn.setNeuronFunction(i, ThresholdFunction.LINEAR, ThresholdFunction.LINEAR.getDefaultParams());
+		}
+		for (int i = 0; i < 6; i++) {
+			for (int j = 6; j < neuronsCount; j+=linksCount) {
+				nn.addLink(i, j, Math.random());
+			}
+		}
+		for (int i = 6; i < neuronsCount; i++) {
+			for (int j = 6; j < neuronsCount; j+=linksCount) {
 				if (i < j) {
 					nn.addLink(i, j, Math.random());
 				}

@@ -1,8 +1,12 @@
 package com.nn;
 
+import java.io.FileWriter;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import javax.xml.bind.JAXBContext;
@@ -158,5 +162,28 @@ public class NeuralNetwork implements Cloneable {
 		Unmarshaller unmarshaller = context.createUnmarshaller();
 		NeuralNetwork unmarshalledNn = (NeuralNetwork) unmarshaller.unmarshal(in);
 		return unmarshalledNn;
+	}
+	
+	public void print() {
+		PrintWriter out = null;
+		try {
+			out = new PrintWriter(new FileWriter("output.txt"));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		for (int i = 0; i < neurons.size(); i++) {
+			Collection<Integer> st = neuronsLinks.getReceivers(i);
+			for (int j = 0; j < neurons.size(); j++) {
+				if (st.contains(j))
+					out.print(neuronsLinks.getWeight(i, j).toString()
+							.substring(0, 4)
+							+ " ");
+				else
+					out.print(0 + " ");
+			}
+			out.println();
+		}
+
+		out.close();
 	}
 }
