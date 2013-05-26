@@ -16,7 +16,6 @@ import com.agent.Food;
 public class EatenFoodObserver implements AgentsEnvironmentObserver {
 
 	protected static final double minEatDistance = 5;
-
 	protected static final double maxFishesDistance = 5;
 
 	private Random random = new Random();

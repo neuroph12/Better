@@ -19,11 +19,11 @@ public class NeuralNetworkDrivenAgent extends Agent {
 
 	protected static final double maxAgentsDistance = 5;
 
-	private static final double AGENT = -10;
+	protected static final double AGENT = -10;
 
-	private static final double EMPTY = 0;
+	protected static final double EMPTY = 0;
 
-	private static final double FOOD = 10;
+	protected static final double FOOD = 10;
 	
 	private static final int RAND_NEURONS = 15;
 

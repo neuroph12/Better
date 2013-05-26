@@ -34,6 +34,7 @@ import javax.swing.SwingUtilities;
 
 import com.agent.AgentsEnvironment;
 import com.agent.Food;
+import com.agent.Informer;
 import com.agent.MovingFood;
 import com.agent.production.NNAgent;
 import com.lagodiuk.ga.Fitness;
@@ -45,15 +46,12 @@ import com.nn.NeuralNetwork;
 import com.nn.genetic.OptimizableNeuralNetwork;
 
 public class Main {
-
-	// TODO maybe, add ability to define these parameters as environment
-	// constants
 	private static final int gaPopulationSize = 5;
 	private static final int parentalChromosomesSurviveCount = 1;
-	private static final int environmentWidth = 600;
-	private static final int environmentHeight = 400;
-	private static final int agentsCount = 15;
-	private static final int foodCount = 10;
+	private static final int ENV_WIDTH = 600;
+	private static final int ENV_HEIGHT = 400;
+	private static final int AGENTS_COUNT = 1;
+	private static final int FOOD_COUNT = 1;
 
 	private static final String PREFS_KEY_BRAINS_DIRECTORY = "BrainsDirectory";
 
@@ -116,22 +114,13 @@ public class Main {
 	private static Preferences prefs;
 
 	public static void main(String[] args) throws Exception {
-		// TODO maybe, add ability to define these parameters as environment
-		// constants
-		int gaPopulationSize = 5;
-		int parentalChromosomesSurviveCount = 1;
-		int environmentWidth = 600;
-		int environmentHeight = 400;
-		int agentsCount = 15;
-		int foodCount = 10;
-
 		initializeGeneticAlgorithm(gaPopulationSize, parentalChromosomesSurviveCount, null);
 
-		initializeEnvironment(environmentWidth, environmentHeight, agentsCount, foodCount);
+		initializeEnvironment(ENV_WIDTH, ENV_HEIGHT, AGENTS_COUNT, FOOD_COUNT);
 
-		initializeCanvas(environmentWidth, environmentHeight);
+		initializeCanvas(ENV_WIDTH, ENV_HEIGHT);
 
-		initializeUI(environmentWidth, environmentHeight);
+		initializeUI(ENV_WIDTH, ENV_HEIGHT);
 
 		initializeEvolveButtonFunctionality();
 
@@ -179,6 +168,7 @@ public class Main {
 
 	private static void initializeEnvironment(int environmentWidth, int environmentHeight, int agentsCount, int foodCount) {
 		environment = new AgentsEnvironment(environmentWidth, environmentHeight);
+		environment.addListener(new ParkObserver());
 		environment.addListener(new EatenFoodObserver() {
 			@Override
 			protected void addRandomPieceOfFood(AgentsEnvironment env) {
@@ -245,8 +235,8 @@ public class Main {
 		loadBrainButton = new JButton("load brain");
 		controlsPanel.add(loadBrainButton);
 
-		staticFoodRadioButton = new JRadioButton("static food");
-		dynamicFoodRadioButton = new JRadioButton("dynamic food");
+		staticFoodRadioButton = new JRadioButton("usual agent");
+		dynamicFoodRadioButton = new JRadioButton("park agent");
 		foodTypeButtonGroup = new ButtonGroup();
 		foodTypeButtonGroup.add(staticFoodRadioButton);
 		foodTypeButtonGroup.add(dynamicFoodRadioButton);
@@ -299,17 +289,25 @@ public class Main {
 					int environmentHeight = environment.getHeight();
 
 					environment.clearAgents();
-					for (int i = 0; i < agentsCount; i++) {
+					for (int i = 0; i < AGENTS_COUNT; i++) {
 						int x = random.nextInt(environmentWidth);
 						int y = random.nextInt(environmentHeight);
 						double direction = random.nextDouble() * 2 * Math.PI;
 
-//						NeuralNetworkDrivenAgent agent = new NeuralNetworkDrivenAgent(x, y, direction);
-//						ProductionAgent agent = new ProductionAgent(x, y, direction); 
-						NNAgent agent = new NNAgent(x, y, direction);
-//						agent.setBrain(ga.getBest());
+						Informer informer = new Informer(x, y, direction);
+						for (Food currFood : environment.filter(Food.class)) {
+							informer.setGoalX(currFood.getX());
+							informer.setGoalY(currFood.getY());
+						}
 
+						x = random.nextInt(environmentWidth);
+						y = random.nextInt(environmentHeight);
+						PathFinderAgent agent = new PathFinderAgent(x, y,
+								direction);
+						agent.setBrain(ga.getBest());
+						
 						environment.addAgent(agent);
+						environment.addAgent(informer);
 					}
 //					boolean wasPlaying = play;
 //					play = false;
@@ -420,7 +418,8 @@ public class Main {
 				int parentalChromosomesSurviveCount = ga.getParentChromosomesSurviveCount();
 				int neuronsCount = Integer.parseInt(neuralTextField.getText().split(":")[0]);
 				int linksCount = Integer.parseInt(neuralTextField.getText().split(":")[1]);
-				initializeGeneticAlgorithm(populationSize, parentalChromosomesSurviveCount, 
+				// TODO: remember
+				initializeGA(populationSize, parentalChromosomesSurviveCount, 
 						NeuralNetworkDrivenAgent.genNeuralBrain(neuronsCount, linksCount));
 				NeuralNetwork newBrain = ga.getBest();
 
@@ -562,7 +561,7 @@ public class Main {
 	private static void initializeAgents(NeuralNetwork brain, int agentsCount) {
 		int environmentWidth = environment.getWidth();
 		int environmentHeight = environment.getHeight();
-
+		
 		for (int i = 0; i < agentsCount; i++) {
 			int x = random.nextInt(environmentWidth);
 			int y = random.nextInt(environmentHeight);
@@ -651,7 +650,7 @@ public class Main {
 			brains.addChromosome(NeuralNetworkDrivenAgent.randomNeuralNetworkBrain());
 		}
 
-		Fitness<OptimizableNeuralNetwork, Double> fit = new TournamentEnvironmentFitness();
+		Fitness<OptimizableNeuralNetwork, Double> fit = new ParkEnvFitness();
 
 		ga = new GeneticAlgorithm<OptimizableNeuralNetwork, Double>(brains, fit);
 

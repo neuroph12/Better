@@ -6,6 +6,7 @@ import java.awt.Graphics2D;
 import com.agent.Agent;
 import com.agent.AgentsEnvironment;
 import com.agent.Food;
+import com.agent.Informer;
 
 public class Visualizator {
 
@@ -29,7 +30,15 @@ public class Visualizator {
 
 			canvas.fillOval(x - agentRadius, y - agentRadius, agentRadius * 2, agentRadius * 2);
 		}
+		
+		canvas.setColor(Color.MAGENTA);
+		for (Agent agent : environment.filter(Informer.class)) {
+			int x = (int) agent.getX();
+			int y = (int) agent.getY();
 
+			canvas.fillOval(x - agentRadius, y - agentRadius, agentRadius * 2, agentRadius * 2);
+		}
+		
 		canvas.setColor(Color.WHITE);
 		for (Agent agent : environment.filter(Agent.class)) {
 			int x = (int) agent.getX();
