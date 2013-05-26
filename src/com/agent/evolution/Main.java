@@ -631,4 +631,32 @@ public class Main {
 			agent.setBrain(newBrain.clone());
 		}
 	}
+	
+	private static void initializeGA(
+			int populationSize,
+			int parentalChromosomesSurviveCount,
+			OptimizableNeuralNetwork baseNeuralNetwork) {
+		Population<OptimizableNeuralNetwork> brains = new Population<OptimizableNeuralNetwork>();
+
+		for (int i = 0; i < (populationSize - 1); i++) {
+			if (baseNeuralNetwork == null) {
+				brains.addChromosome(NeuralNetworkDrivenAgent.randomNeuralNetworkBrain());
+			} else {
+				brains.addChromosome(baseNeuralNetwork.mutate());
+			}
+		}
+		if (baseNeuralNetwork != null) {
+			brains.addChromosome(baseNeuralNetwork);
+		} else {
+			brains.addChromosome(NeuralNetworkDrivenAgent.randomNeuralNetworkBrain());
+		}
+
+		Fitness<OptimizableNeuralNetwork, Double> fit = new TournamentEnvironmentFitness();
+
+		ga = new GeneticAlgorithm<OptimizableNeuralNetwork, Double>(brains, fit);
+
+		addGASystemOutIterationListener();
+
+		ga.setParentChromosomesSurviveCount(parentalChromosomesSurviveCount);
+	}
 }

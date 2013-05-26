@@ -25,7 +25,7 @@ public class NeuralNetworkDrivenAgent extends Agent {
 
 	private static final double FOOD = 10;
 	
-	private static final int RAND_NEURONS = 20;
+	private static final int RAND_NEURONS = 15;
 
 	private volatile NeuralNetwork brain;
 
