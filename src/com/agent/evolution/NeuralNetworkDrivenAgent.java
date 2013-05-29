@@ -189,22 +189,22 @@ public class NeuralNetworkDrivenAgent extends Agent {
 		return nn;
 	}
 	
-	public static OptimizableNeuralNetwork genNeuralBrain (int neuronsCount, int linksCount) {
+	public static OptimizableNeuralNetwork genNeuralBrain (int inputCount, int neuronsCount, int linksCount) {
 		OptimizableNeuralNetwork nn = new OptimizableNeuralNetwork(neuronsCount);
 		for (int i = 0; i < neuronsCount; i++) {
 			ThresholdFunction f = ThresholdFunction.getRandomFunction();
 			nn.setNeuronFunction(i, f, f.getDefaultParams());
 		}
-		for (int i = 0; i < 6; i++) {
+		for (int i = 0; i < inputCount; i++) {
 			nn.setNeuronFunction(i, ThresholdFunction.LINEAR, ThresholdFunction.LINEAR.getDefaultParams());
 		}
-		for (int i = 0; i < 6; i++) {
-			for (int j = 6; j < neuronsCount; j+=linksCount) {
+		for (int i = 0; i < inputCount; i++) {
+			for (int j = inputCount; j < neuronsCount; j+=linksCount) {
 				nn.addLink(i, j, Math.random());
 			}
 		}
-		for (int i = 6; i < neuronsCount; i++) {
-			for (int j = 6; j < neuronsCount; j+=linksCount) {
+		for (int i = inputCount; i < neuronsCount; i++) {
+			for (int j = inputCount; j < neuronsCount; j+=linksCount) {
 				if (i < j) {
 					nn.addLink(i, j, Math.random());
 				}

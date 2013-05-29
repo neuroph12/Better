@@ -255,7 +255,7 @@ public class Main {
 		printButton = new JButton("print");
 		controlsPanel.add(printButton);
 		
-		neuralTextField = new JTextField("15:1");
+		neuralTextField = new JTextField("6:15:1");
 		controlsPanel.add(neuralTextField);
 		
 		playPauseButton = new JButton("pause");
@@ -357,13 +357,18 @@ public class Main {
 
 						NeuralNetwork newBrain = NeuralNetwork.unmarsall(in);
 						in.close();
-
-						setAgentBrains(newBrain);
+						
+						for (PathFinderAgent agent : environment.filter(PathFinderAgent.class)) {
+							agent.setBrain(newBrain.clone());
+						}
+//						setAgentBrains(newBrain);
 
 						OptimizableNeuralNetwork optimizableNewBrain = new OptimizableNeuralNetwork(newBrain);
 						int populationSize = ga.getPopulation().getSize();
 						int parentalChromosomesSurviveCount = ga.getParentChromosomesSurviveCount();
-						initializeGeneticAlgorithm(populationSize, parentalChromosomesSurviveCount, optimizableNewBrain);
+						// TODO:
+						initializeGA(populationSize, parentalChromosomesSurviveCount, optimizableNewBrain);
+//						initializeGeneticAlgorithm(populationSize, parentalChromosomesSurviveCount, optimizableNewBrain);
 
 						// reset population number counter
 						populationNumber = 0;
@@ -416,14 +421,16 @@ public class Main {
 
 				int populationSize = ga.getPopulation().getSize();
 				int parentalChromosomesSurviveCount = ga.getParentChromosomesSurviveCount();
-				int neuronsCount = Integer.parseInt(neuralTextField.getText().split(":")[0]);
-				int linksCount = Integer.parseInt(neuralTextField.getText().split(":")[1]);
+				int neuronsCount = Integer.parseInt(neuralTextField.getText().split(":")[1]);
+				int linksCount = Integer.parseInt(neuralTextField.getText().split(":")[2]);
+				int inputCount = Integer.parseInt(neuralTextField.getText().split(":")[0]);
 				// TODO: remember
 				initializeGA(populationSize, parentalChromosomesSurviveCount, 
-						NeuralNetworkDrivenAgent.genNeuralBrain(neuronsCount, linksCount));
+						NeuralNetworkDrivenAgent.genNeuralBrain(inputCount, neuronsCount, linksCount));
 				NeuralNetwork newBrain = ga.getBest();
-
-				setAgentBrains(newBrain);
+				for (PathFinderAgent agent : environment.filter(PathFinderAgent.class)) {
+					agent.setBrain(newBrain.clone());
+				}
 
 				// reset population number counter
 				populationNumber = 0;
