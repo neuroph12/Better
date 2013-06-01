@@ -1,10 +1,9 @@
 package com.agent.production;
 
-import java.util.List;
-
 import com.agent.Agent;
 import com.agent.AgentsEnvironment;
 import com.agent.Food;
+import com.nn.NeuralNetwork;
 
 public class ProductionAgent extends Agent{
 
@@ -19,6 +18,8 @@ public class ProductionAgent extends Agent{
 	private static final double EMPTY = 0;
 
 	private static final double FOOD = 10;
+	
+	private volatile NeuralNetwork brain;
 	
 	public ProductionAgent(double x, double y, double angle) {
 		super(x, y, angle);
@@ -71,5 +72,13 @@ public class ProductionAgent extends Agent{
 		this.setSpeed(10);
 
 		this.move();
+	}
+
+	public NeuralNetwork getBrain() {
+		return brain;
+	}
+
+	public void setBrain(NeuralNetwork brain) {
+		this.brain = brain;
 	}
 }

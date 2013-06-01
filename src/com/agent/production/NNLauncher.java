@@ -1,4 +1,4 @@
-package com.agent.evolution;
+package com.agent.production;
 
 import java.awt.BorderLayout;
 import java.awt.Graphics2D;
@@ -36,6 +36,13 @@ import com.agent.AgentsEnvironment;
 import com.agent.Food;
 import com.agent.Informer;
 import com.agent.MovingFood;
+import com.agent.evolution.EatenFoodObserver;
+import com.agent.evolution.NeuralNetworkDrivenAgent;
+import com.agent.evolution.ParkEnvFitness;
+import com.agent.evolution.ParkObserver;
+import com.agent.evolution.PathFinderAgent;
+import com.agent.evolution.TournamentEnvironmentFitness;
+import com.agent.evolution.Visualizator;
 import com.agent.production.NNAgent;
 import com.agent.production.OptNN;
 import com.agent.production.OptNNFitness;
@@ -44,10 +51,9 @@ import com.lagodiuk.ga.GeneticAlgorithm;
 import com.lagodiuk.ga.IterartionListener;
 import com.lagodiuk.ga.Population;
 
-import com.nn.NeuralNetwork;
-import com.nn.genetic.OptimizableNeuralNetwork;
+import org.neuroph.core.NeuralNetwork;
 
-public class Main {
+public class NNLauncher {
 	private static final int gaPopulationSize = 5;
 	private static final int parentalChromosomesSurviveCount = 1;
 	private static final int ENV_WIDTH = 600;
@@ -59,7 +65,7 @@ public class Main {
 
 	private static Random random = new Random();
 
-	private static GeneticAlgorithm<OptimizableNeuralNetwork, Double> ga;
+	private static GeneticAlgorithm<OptNN, Double> ga;
 
 	private static AgentsEnvironment environment;
 
@@ -116,7 +122,7 @@ public class Main {
 	private static Preferences prefs;
 
 	public static void main(String[] args) throws Exception {
-		initializeGeneticAlgorithm(gaPopulationSize, parentalChromosomesSurviveCount, null);
+		initializeGA(gaPopulationSize, parentalChromosomesSurviveCount, null);
 
 		initializeEnvironment(ENV_WIDTH, ENV_HEIGHT, AGENTS_COUNT, FOOD_COUNT);
 
@@ -274,7 +280,7 @@ public class Main {
 		populationInfoLabel = new JLabel("Population: " + populationNumber, SwingConstants.CENTER);
 		appFrame.add(populationInfoLabel, BorderLayout.NORTH);
 
-		prefs = Preferences.userNodeForPackage(Main.class);
+		prefs = Preferences.userNodeForPackage(NNLauncher.class);
 		String brainsDirPath = prefs.get(PREFS_KEY_BRAINS_DIRECTORY, "");
 		fileChooser = new JFileChooser(new File(brainsDirPath));
 	}
@@ -306,7 +312,8 @@ public class Main {
 						y = random.nextInt(environmentHeight);
 						PathFinderAgent agent = new PathFinderAgent(x, y,
 								direction);
-						agent.setBrain(ga.getBest());
+						// TODO:
+//						agent.setBrain(ga.getBest());
 						
 						environment.addAgent(agent);
 						environment.addAgent(informer);
@@ -347,40 +354,40 @@ public class Main {
 		loadBrainButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				disableControls();
-
-				int returnVal = fileChooser.showOpenDialog(appFrame);
-				if (returnVal == JFileChooser.APPROVE_OPTION) {
-					try {
-						File brainFile = fileChooser.getSelectedFile();
-						prefs.put(PREFS_KEY_BRAINS_DIRECTORY, brainFile.getParent());
-
-						FileInputStream in = new FileInputStream(brainFile);
-
-						NeuralNetwork newBrain = NeuralNetwork.unmarsall(in);
-						in.close();
-						
-						for (PathFinderAgent agent : environment.filter(PathFinderAgent.class)) {
-							agent.setBrain(newBrain.clone());
-						}
-//						setAgentBrains(newBrain);
-
-						OptimizableNeuralNetwork optimizableNewBrain = new OptimizableNeuralNetwork(newBrain);
-						int populationSize = ga.getPopulation().getSize();
-						int parentalChromosomesSurviveCount = ga.getParentChromosomesSurviveCount();
-						// TODO:
-						initializeGA(populationSize, parentalChromosomesSurviveCount, optimizableNewBrain);
-//						initializeGeneticAlgorithm(populationSize, parentalChromosomesSurviveCount, optimizableNewBrain);
-
-						// reset population number counter
-						populationNumber = 0;
-						populationInfoLabel.setText("Population: " + populationNumber);
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
-				}
-
-				enableControls();
+//				disableControls();
+//
+//				int returnVal = fileChooser.showOpenDialog(appFrame);
+//				if (returnVal == JFileChooser.APPROVE_OPTION) {
+//					try {
+//						File brainFile = fileChooser.getSelectedFile();
+//						prefs.put(PREFS_KEY_BRAINS_DIRECTORY, brainFile.getParent());
+//
+//						FileInputStream in = new FileInputStream(brainFile);
+//
+//						NeuralNetwork newBrain = NeuralNetwork.unmarsall(in);
+//						in.close();
+//						
+//						for (PathFinderAgent agent : environment.filter(PathFinderAgent.class)) {
+//							agent.setBrain(newBrain.clone());
+//						}
+////						setAgentBrains(newBrain);
+//
+//						OptNN optimizableNewBrain = new OptNN(newBrain);
+//						int populationSize = ga.getPopulation().getSize();
+//						int parentalChromosomesSurviveCount = ga.getParentChromosomesSurviveCount();
+//						// TODO:
+//						initializeGA(populationSize, parentalChromosomesSurviveCount, optimizableNewBrain);
+////						initializeGeneticAlgorithm(populationSize, parentalChromosomesSurviveCount, optimizableNewBrain);
+//
+//						// reset population number counter
+//						populationNumber = 0;
+//						populationInfoLabel.setText("Population: " + populationNumber);
+//					} catch (Exception e) {
+//						e.printStackTrace();
+//					}
+//				}
+//
+//				enableControls();
 			}
 		});
 	}
@@ -389,28 +396,28 @@ public class Main {
 		saveBrainButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				disableControls();
-
-				int returnVal = fileChooser.showSaveDialog(appFrame);
-				if (returnVal == JFileChooser.APPROVE_OPTION) {
-					try {
-						File brainFile = fileChooser.getSelectedFile();
-						prefs.put(PREFS_KEY_BRAINS_DIRECTORY, brainFile.getParent());
-
-						FileOutputStream out = new FileOutputStream(brainFile);
-
-						// current brain is the best evolved neural network
-						// from genetic algorithm
-						NeuralNetwork brain = ga.getBest();
-						NeuralNetwork.marsall(brain, out);
-						
-						out.close();
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
-				}
-
-				enableControls();
+//				disableControls();
+//
+//				int returnVal = fileChooser.showSaveDialog(appFrame);
+//				if (returnVal == JFileChooser.APPROVE_OPTION) {
+//					try {
+//						File brainFile = fileChooser.getSelectedFile();
+//						prefs.put(PREFS_KEY_BRAINS_DIRECTORY, brainFile.getParent());
+//
+//						FileOutputStream out = new FileOutputStream(brainFile);
+//
+//						// current brain is the best evolved neural network
+//						// from genetic algorithm
+//						NeuralNetwork brain = ga.getBest();
+//						NeuralNetwork.marsall(brain, out);
+//						
+//						out.close();
+//					} catch (Exception e) {
+//						e.printStackTrace();
+//					}
+//				}
+//
+//				enableControls();
 			}
 		});
 	}
@@ -427,12 +434,12 @@ public class Main {
 				int linksCount = Integer.parseInt(neuralTextField.getText().split(":")[2]);
 				int inputCount = Integer.parseInt(neuralTextField.getText().split(":")[0]);
 				// TODO: remember
-				initializeGA(populationSize, parentalChromosomesSurviveCount, 
-						NeuralNetworkDrivenAgent.genNeuralBrain(inputCount, neuronsCount, linksCount));
-				NeuralNetwork newBrain = ga.getBest();
-				for (PathFinderAgent agent : environment.filter(PathFinderAgent.class)) {
-					agent.setBrain(newBrain.clone());
-				}
+//				initializeGA(populationSize, parentalChromosomesSurviveCount, 
+//						NeuralNetworkDrivenAgent.genNeuralBrain(inputCount, neuronsCount, linksCount));
+//				NeuralNetwork newBrain = ga.getBest();
+//				for (PathFinderAgent agent : environment.filter(PathFinderAgent.class)) {
+//					agent.setBrain(newBrain.clone());
+//				}
 
 				// reset population number counter
 				populationNumber = 0;
@@ -466,10 +473,10 @@ public class Main {
 				new Thread(new Runnable() {
 					@Override
 					public void run() {
-						IterartionListener<OptimizableNeuralNetwork, Double> progressListener =
-								new IterartionListener<OptimizableNeuralNetwork, Double>() {
+						IterartionListener<OptNN, Double> progressListener =
+								new IterartionListener<OptNN, Double>() {
 									@Override
-									public void update(GeneticAlgorithm<OptimizableNeuralNetwork, Double> environment) {
+									public void update(GeneticAlgorithm<OptNN, Double> environment) {
 										final int iteration = environment.getIteration();
 										SwingUtilities.invokeLater(new Runnable() {
 											@Override
@@ -535,8 +542,8 @@ public class Main {
 					environment.addAgent(food);
 				} else {
 					double angle = 2 * Math.PI * random.nextDouble();
-					NeuralNetworkDrivenAgent agent = new NeuralNetworkDrivenAgent(x, y, angle);
-					OptimizableNeuralNetwork brain = ga.getBest();
+					NNAgent agent = new NNAgent(x, y, angle);
+					OptNN brain = ga.getBest();
 					agent.setBrain(brain);
 					environment.addAgent(agent);
 				}
@@ -548,8 +555,9 @@ public class Main {
 		printButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent event) {
-				for (NeuralNetworkDrivenAgent agent : environment.filter(NeuralNetworkDrivenAgent.class)) {
-					agent.getBrain().print();
+				for (NNAgent agent : environment.filter(NNAgent.class)) {
+					// TODO: check this
+//					agent.getBrain().print();
 				}
 			}
 		});
@@ -576,7 +584,7 @@ public class Main {
 			int y = random.nextInt(environmentHeight);
 			double direction = random.nextDouble() * 2 * Math.PI;
 
-			NeuralNetworkDrivenAgent agent = new NeuralNetworkDrivenAgent(x, y, direction);
+			NNAgent agent = new NNAgent(x, y, direction);
 			agent.setBrain(brain);
 
 			environment.addAgent(agent);
@@ -593,39 +601,39 @@ public class Main {
 		}
 	}
 
-	private static void initializeGeneticAlgorithm(
-			int populationSize,
-			int parentalChromosomesSurviveCount,
-			OptimizableNeuralNetwork baseNeuralNetwork) {
-		Population<OptimizableNeuralNetwork> brains = new Population<OptimizableNeuralNetwork>();
-
-		for (int i = 0; i < (populationSize - 1); i++) {
-			if (baseNeuralNetwork == null) {
-				brains.addChromosome(NeuralNetworkDrivenAgent.randomNeuralNetworkBrain());
-			} else {
-				brains.addChromosome(baseNeuralNetwork.mutate());
-			}
-		}
-		if (baseNeuralNetwork != null) {
-			brains.addChromosome(baseNeuralNetwork);
-		} else {
-			brains.addChromosome(NeuralNetworkDrivenAgent.randomNeuralNetworkBrain());
-		}
-
-		Fitness<OptimizableNeuralNetwork, Double> fit = new TournamentEnvironmentFitness();
-
-		ga = new GeneticAlgorithm<OptimizableNeuralNetwork, Double>(brains, fit);
-
-		addGASystemOutIterationListener();
-
-		ga.setParentChromosomesSurviveCount(parentalChromosomesSurviveCount);
-	}
+//	private static void initializeGeneticAlgorithm(
+//			int populationSize,
+//			int parentalChromosomesSurviveCount,
+//			OptNN baseNeuralNetwork) {
+//		Population<OptNN> brains = new Population<OptNN>();
+//
+//		for (int i = 0; i < (populationSize - 1); i++) {
+//			if (baseNeuralNetwork == null) {
+//				brains.addChromosome(NeuralNetworkDrivenAgent.randomNeuralNetworkBrain());
+//			} else {
+//				brains.addChromosome(baseNeuralNetwork.mutate());
+//			}
+//		}
+//		if (baseNeuralNetwork != null) {
+//			brains.addChromosome(baseNeuralNetwork);
+//		} else {
+//			brains.addChromosome(NeuralNetworkDrivenAgent.randomNeuralNetworkBrain());
+//		}
+//
+//		Fitness<OptNN, Double> fit = new TournamentEnvironmentFitness();
+//
+//		ga = new GeneticAlgorithm<OptNN, Double>(brains, fit);
+//
+//		addGASystemOutIterationListener();
+//
+//		ga.setParentChromosomesSurviveCount(parentalChromosomesSurviveCount);
+//	}
 
 	private static void addGASystemOutIterationListener() {
-		ga.addIterationListener(new IterartionListener<OptimizableNeuralNetwork, Double>() {
+		ga.addIterationListener(new IterartionListener<OptNN, Double>() {
 			@Override
-			public void update(GeneticAlgorithm<OptimizableNeuralNetwork, Double> ga) {
-				OptimizableNeuralNetwork bestBrain = ga.getBest();
+			public void update(GeneticAlgorithm<OptNN, Double> ga) {
+				OptNN bestBrain = ga.getBest();
 				Double fit = ga.fitness(bestBrain);
 				System.out.println(ga.getIteration() + "\t" + fit);
 
@@ -635,20 +643,22 @@ public class Main {
 	}
 
 	private static void setAgentBrains(NeuralNetwork newBrain) {
-		for (NeuralNetworkDrivenAgent agent : environment.filter(NeuralNetworkDrivenAgent.class)) {
-			agent.setBrain(newBrain.clone());
+		for (NNAgent agent : environment.filter(NNAgent.class)) {
+			// TODO
+			agent.setBrain(newBrain);
+//			agent.setBrain(newBrain.clone());
 		}
 	}
 	
 	private static void initializeGA(
 			int populationSize,
 			int parentalChromosomesSurviveCount,
-			OptimizableNeuralNetwork baseNeuralNetwork) {
-		Population<OptimizableNeuralNetwork> brains = new Population<OptimizableNeuralNetwork>();
+			OptNN baseNeuralNetwork) {
+		Population<OptNN> brains = new Population<OptNN>();
 
 		for (int i = 0; i < (populationSize - 1); i++) {
 			if (baseNeuralNetwork == null) {
-				brains.addChromosome(NeuralNetworkDrivenAgent.randomNeuralNetworkBrain());
+				brains.addChromosome(NNAgent.randomNeuralNetworkBrain());
 			} else {
 				brains.addChromosome(baseNeuralNetwork.mutate());
 			}
@@ -656,18 +666,12 @@ public class Main {
 		if (baseNeuralNetwork != null) {
 			brains.addChromosome(baseNeuralNetwork);
 		} else {
-			brains.addChromosome(NeuralNetworkDrivenAgent.randomNeuralNetworkBrain());
+			brains.addChromosome(NNAgent.randomNeuralNetworkBrain());
 		}
 
-		Fitness<OptimizableNeuralNetwork, Double> fit = new ParkEnvFitness();
+		Fitness<OptNN, Double> fit = new OptNNFitness();
 
-		ga = new GeneticAlgorithm<OptimizableNeuralNetwork, Double>(brains, fit);
-		// Remember!!
-//		Population<OptNN> brains2 = new Population<OptNN>();
-//		Fitness<OptNN, Double> fit2 = new OptNNFitness();
-//		GeneticAlgorithm<OptNN, Double> ga2 = new GeneticAlgorithm<OptNN, Double>(brains2, fit2);
-//		ga2.getBest();
-		
+		ga = new GeneticAlgorithm<OptNN, Double>(brains, fit);
 		addGASystemOutIterationListener();
 
 		ga.setParentChromosomesSurviveCount(parentalChromosomesSurviveCount);

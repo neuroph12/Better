@@ -1,13 +1,20 @@
 package com.agent.production;
 
 import org.neuroph.core.NeuralNetwork;
+import org.neuroph.core.Neuron;
 import org.neuroph.core.learning.DataSet;
 import org.neuroph.core.learning.DataSetRow;
+import org.neuroph.core.transfer.TransferFunction;
 import org.neuroph.nnet.Perceptron;
+import org.neuroph.nnet.comp.neuron.ThresholdNeuron;
+import org.neuroph.util.NeuralNetworkType;
+import org.neuroph.util.TransferFunctionType;
 
 import com.agent.Agent;
 import com.agent.AgentsEnvironment;
 import com.agent.Food;
+import com.nn.ThresholdFunction;
+import com.nn.genetic.OptimizableNeuralNetwork;
 
 public class NNAgent extends Agent {
 
@@ -86,7 +93,51 @@ public class NNAgent extends Agent {
 		this.move();
 	}
 
-	public void setBrain(NeuralNetwork best) {
+	public synchronized void setBrain(NeuralNetwork best) {
 		brain = best;
+	}
+
+	public NeuralNetwork getBrain() {
+		return brain;
+	}
+	
+	public static OptNN randomNeuralNetworkBrain () {
+		OptNN nn = new OptNN();
+
+		nn.setNetworkType(NeuralNetworkType.KOHONEN);
+		Neuron inputNeurons[];
+		// TODO: change that
+//		for (int i=0;i<6;i++)
+//		{
+//			inputNeurons[i] = new Neuron().setTransferFunction();
+//		}
+//		nn.setInputNeurons(inputNeurons);
+		nn.randomizeWeights();
+		
+		return nn;
+	}	
+	
+	public static OptNN genNeuralBrain (int inputCount, int neuronsCount, int linksCount) {
+		OptNN nn = new OptNN();
+//		for (int i = 0; i < neuronsCount; i++) {
+//			ThresholdFunction f = ThresholdFunction.getRandomFunction();
+//			nn.setNeuronFunction(i, f, f.getDefaultParams());
+//		}
+//		for (int i = 0; i < inputCount; i++) {
+//			nn.setNeuronFunction(i, ThresholdFunction.LINEAR, ThresholdFunction.LINEAR.getDefaultParams());
+//		}
+//		for (int i = 0; i < inputCount; i++) {
+//			for (int j = inputCount; j < neuronsCount; j+=linksCount) {
+//				nn.addLink(i, j, Math.random());
+//			}
+//		}
+//		for (int i = inputCount; i < neuronsCount; i++) {
+//			for (int j = inputCount; j < neuronsCount; j+=linksCount) {
+//				if (i < j) {
+//					nn.addLink(i, j, Math.random());
+//				}
+//			}
+//		}
+		return nn;
 	}
 }

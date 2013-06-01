@@ -13,6 +13,8 @@ import org.neuroph.core.Layer;
 import org.neuroph.core.NeuralNetwork;
 import com.lagodiuk.ga.Chromosome;
 import org.neuroph.core.Neuron;
+import org.neuroph.nnet.Perceptron;
+
 import com.nn.genetic.OptimizableNeuralNetwork;
 
 @XmlRootElement
