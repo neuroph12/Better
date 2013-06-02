@@ -311,28 +311,13 @@ public class ProductionLauncher {
 
 						x = random.nextInt(environmentWidth);
 						y = random.nextInt(environmentHeight);
-						PathFinderAgent agent = new PathFinderAgent(x, y,
+						ProductionPathAgent agent = new ProductionPathAgent(x, y,
 								direction);
 						agent.setBrain(NeuralNetworkDrivenAgent.randomNeuralNetworkBrain());
 						
 						environment.addAgent(agent);
 						environment.addAgent(informer);
 					}
-//					boolean wasPlaying = play;
-//					play = false;
-//					staticFood = !staticFood;
-//					List<Food> food = new LinkedList<Food>();
-//					for (Food f : environment.filter(Food.class)) {
-//						food.add(f);
-//					}
-//					for (Food f : food) {
-//						environment.removeAgent(f);
-//						Food newFood = createRandomFood(1, 1);
-//						newFood.setX(f.getX());
-//						newFood.setY(f.getY());
-//						environment.addAgent(newFood);
-//					}
-//					play = wasPlaying;
 					enableControls();
 				}
 			}

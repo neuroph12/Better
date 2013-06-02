@@ -5,22 +5,16 @@ import com.agent.AgentsEnvironment;
 import com.agent.Food;
 import com.nn.NeuralNetwork;
 
-public class ProductionAgent extends Agent{
+public class ProductionAgent extends Agent {
 
 	private static final double maxSpeed = 4;
 
-	private static final double maxDeltaAngle = 1;
+	protected static final double maxDeltaAngle = 1;
 
 	protected static final double maxAgentsDistance = 5;
 
-	private static final double AGENT = -10;
-
-	private static final double EMPTY = 0;
-
-	private static final double FOOD = 10;
-	
 	private volatile NeuralNetwork brain;
-	
+
 	public ProductionAgent(double x, double y, double angle) {
 		super(x, y, angle);
 	}
@@ -42,34 +36,26 @@ public class ProductionAgent extends Agent{
 			}
 		}
 
-		if (nearestFood != null) 
-		{
-		double rx = this.getRx();
-		double ry = this.getRy();
-		double x = this.getX();
-		double y = this.getY();
-		
-		double foodDirectionVectorX = nearestFood.getX() - x;
-		double foodDirectionVectorY = nearestFood.getY() - y;
+		if (nearestFood != null) {
+			double rx = this.getRx();
+			double ry = this.getRy();
+			double x = this.getX();
+			double y = this.getY();
 
-		// left/right cos
-		double foodDirectionCosTeta =
-				Math.signum(this.pseudoScalarProduct(rx, ry, foodDirectionVectorX, foodDirectionVectorY))
-						* this.cosTeta(rx, ry, foodDirectionVectorX, foodDirectionVectorY);
+			double foodDirectionVectorX = nearestFood.getX() - x;
+			double foodDirectionVectorY = nearestFood.getY() - y;
 
-		
-		double deltaAngle = foodDirectionCosTeta;
-//		double deltaSpeed = 15;
+			// left/right cos
+			double foodDirectionCosTeta = Math.signum(this.pseudoScalarProduct(rx, ry, foodDirectionVectorX,
+					foodDirectionVectorY)) * this.cosTeta(rx, ry, foodDirectionVectorX, foodDirectionVectorY);
 
-//		deltaSpeed = avoidNaNAndInfinity(deltaSpeed);
-		deltaAngle = avoidNaNAndInfinity(deltaAngle);
+			double deltaAngle = foodDirectionCosTeta;
+			deltaAngle = avoidNaNAndInfinity(deltaAngle);
+			double newAngle = this.getAngle() + normalizeDeltaAngle(deltaAngle, maxDeltaAngle);
 
-//		double newSpeed = normalizeSpeed(this.getSpeed() + deltaSpeed, maxSpeed);
-		double newAngle = this.getAngle() + normalizeDeltaAngle(deltaAngle, maxDeltaAngle);
-
-		this.setAngle(newAngle);
+			this.setAngle(newAngle);
 		}
-		this.setSpeed(10);
+		this.setSpeed(maxSpeed);
 
 		this.move();
 	}
