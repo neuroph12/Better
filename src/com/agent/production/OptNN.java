@@ -37,8 +37,6 @@ public class OptNN extends NeuralNetwork implements Chromosome<OptNN>,
 		OptNN anotherClone = anotherChromosome.clone();
 		OptNN thisClone = this.clone();
 		
-		
-		
 		List<OptNN> ret = new ArrayList<OptNN>();
 		ret.add(anotherClone);
 		ret.add(thisClone);
@@ -83,7 +81,8 @@ public class OptNN extends NeuralNetwork implements Chromosome<OptNN>,
 		OptNN clone = new OptNN();
 		clone.setInputNeurons(this.getInputNeurons().clone());
 		clone.setOutputNeurons(this.getOutputNeurons().clone());
-		clone.setLearningRule(this.getLearningRule());
+		clone.setNetworkType(this.getNetworkType());
+//		clone.setLearningRule(this.getLearningRule());
 		for (Layer layer : this.getLayers()) {
 			Layer newLayer = new Layer();
 			for (Neuron neuron : layer.getNeurons()) {

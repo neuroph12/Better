@@ -12,10 +12,6 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Random;
 import java.util.prefs.Preferences;
 
@@ -32,26 +28,20 @@ import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 
+import org.neuroph.core.NeuralNetwork;
+
 import com.agent.AgentsEnvironment;
 import com.agent.Food;
 import com.agent.Informer;
 import com.agent.MovingFood;
 import com.agent.evolution.EatenFoodObserver;
-import com.agent.evolution.NeuralNetworkDrivenAgent;
-import com.agent.evolution.ParkEnvFitness;
 import com.agent.evolution.ParkObserver;
 import com.agent.evolution.PathFinderAgent;
-import com.agent.evolution.TournamentEnvironmentFitness;
 import com.agent.evolution.Visualizator;
-import com.agent.production.NNAgent;
-import com.agent.production.OptNN;
-import com.agent.production.OptNNFitness;
 import com.lagodiuk.ga.Fitness;
 import com.lagodiuk.ga.GeneticAlgorithm;
 import com.lagodiuk.ga.IterartionListener;
 import com.lagodiuk.ga.Population;
-
-import org.neuroph.core.NeuralNetwork;
 
 public class NNLauncher {
 	private static final int gaPopulationSize = 5;
